@@ -1,0 +1,22 @@
+fastapi
+uvicorn
+requests
+
+groq
+
+# Data
+pandas
+pyarrow
+duckdb
+
+# NLP
+spacy
+sentence-transformers
+pyalex
+apscheduler
+python-dotenv
+loguru
+beautifulsoup4
+tqdm
+pytest
+httpx    

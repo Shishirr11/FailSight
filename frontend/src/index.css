@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        font-size: 14px;
+    }
+
+    body {
+        @apply bg-surface-950 text-slate-100 font-sans antialiased;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-surface-800 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-slate-600;
+    }
+
+    ::selection {
+        @apply bg-brand-500/30 text-brand-100;
+    }
+}
+
+@layer components {
+
+    .card {
+        @apply bg-surface-900 border border-white/[0.06] rounded-xl;
+    }
+
+    .card-hover {
+        @apply card transition-all duration-150 hover:border-white/[0.12] hover:bg-surface-800 cursor-pointer;
+    }
+
+    .card-active {
+        @apply bg-brand-600/10 border-brand-500/40;
+    }
+
+    .input {
+        @apply w-full bg-surface-800 border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500/60 focus:ring-1 focus:ring-brand-500/30 transition-colors;
+    }
+
+    .btn-primary {
+        @apply bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors;
+    }
+
+    .btn-ghost {
+        @apply bg-transparent hover:bg-white/[0.06] text-slate-400 hover:text-slate-100 text-sm font-medium px-3 py-2 rounded-lg transition-colors;
+    }
+
+    .btn-outline {
+        @apply bg-transparent border border-white/[0.1] hover:border-white/[0.2] text-slate-300 hover:text-slate-100 text-sm font-medium px-3 py-2 rounded-lg transition-colors;
+    }
+
+    .badge-grants {
+        @apply text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20;
+    }
+
+    .badge-sam {
+        @apply text-2xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20;
+    }
+
+    .badge-patents {
+        @apply text-2xs font-semibold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/20;
+    }
+
+    .badge-research {
+        @apply text-2xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20;
+    }
+
+    .section-label {
+        @apply text-2xs font-semibold uppercase tracking-widest text-slate-500;
+    }
+
+    .divider {
+        @apply border-t border-white/[0.06];
+    }
+
+    .stat-num {
+        @apply text-2xl font-bold text-slate-100 tabular-nums;
+    }
+}
