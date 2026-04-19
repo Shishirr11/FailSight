@@ -8,16 +8,17 @@ from storage.db import get_db
 router = APIRouter()
 
 def _clean(record: dict) -> dict:
+    import numpy as np
     out = {}
     for k, v in record.items():
-        if hasattr(v, 'item'):
-            v = v.item()
-        if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-            v = None
-        elif hasattr(v, 'tolist'):
+        if isinstance(v, np.ndarray):
             v = v.tolist()
+        elif hasattr(v, 'ndim') and v.ndim == 0 and hasattr(v, 'item'):
+            v = v.item()
+        elif isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+            v = None
         elif isinstance(v, list):
-            v = [x.item() if hasattr(x, 'item') else x for x in v]
+            v = [x.item() if (hasattr(x, 'ndim') and x.ndim == 0) else x for x in v]
         elif v == '':
             v = None
         out[k] = v
@@ -213,9 +214,3 @@ def get_opportunity(opp_id: str):
             record["key_fields"] = {}
 
     return record
-"""
-GET /api/opportunities        — paginated, filterable list
-GET /api/opportunities/stats  — counts per source + sector
-GET /api/opportunities/{id}   — full detail + enriched key_fields
-"""
-

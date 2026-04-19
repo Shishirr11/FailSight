@@ -570,10 +570,7 @@ if __name__ == "__main__":
     else:
         logger.warning("No records to write.")
 
-"""
-    python -m collectors.research_collector --probe          
-    python -m collectors.research_collector --disk           
-    python -m collectors.research_collector --max 50         
-    python -m collectors.research_collector --year 2023      
+"""        
+    python -m collectors.research_collector --max number           
     python -m collectors.research_collector --no-pubmed      
 """

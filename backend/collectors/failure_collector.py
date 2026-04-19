@@ -738,7 +738,7 @@ def _lootdrop_supabase_fetch() -> list[dict]:
         )
 
         if len(batch) < LOOTDROP_PAGE_SIZE:
-            break   # last page
+            break  
 
         offset += LOOTDROP_PAGE_SIZE
         time.sleep(0.2)
@@ -1053,9 +1053,6 @@ if __name__ == "__main__":
 
 
 """
-    python -m collectors.failure_collector --no-failory
-    python -m collectors.failure_collector --no-lootdrop
-    python -m collectors.failure_collector --no-deep          # skip Failory detail pages
-    python -m collectors.failure_collector --disk             # load from latest saved file
-    python -m collectors.failure_collector --source lootdrop  # lootdrop only
+    python -m collectors.failure_collector --no-deep                 
+    python -m collectors.failure_collector --source lootdrop  
 """

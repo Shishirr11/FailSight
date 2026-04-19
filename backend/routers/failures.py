@@ -55,16 +55,25 @@ def failure_stats():
 
     total = int(con.execute("SELECT COUNT(*) FROM failures_unified").fetchone()[0])
 
-    top_reasons = con.execute("""
-        SELECT
-            unnest(failure_reasons) AS reason,
-            COUNT(*) AS count
+    raw_reasons = con.execute("""
+        SELECT failure_reasons
         FROM failures_unified
-        GROUP BY reason
-        ORDER BY count DESC
-        LIMIT 10
-    """).fetchdf().to_dict(orient="records")
+        WHERE failure_reasons IS NOT NULL
+    """).fetchdf()
 
+    from collections import Counter
+    all_reasons = []
+    for row in raw_reasons["failure_reasons"]:
+        if isinstance(row, list):
+            all_reasons.extend(row)
+        elif hasattr(row, "tolist"):
+            all_reasons.extend(row.tolist())
+
+    top_reasons = [
+        {"reason": r, "count": c}
+        for r, c in Counter(all_reasons).most_common(10)
+        if r and r != "unknown"
+    ]
     by_sector = con.execute("""
         SELECT
             sector,
@@ -319,8 +328,7 @@ def get_failure(failure_id: str):
     return record
 
 """
-GET /api/failures              — paginated list
-GET /api/failures/stats        — summary counts + top reasons + sectors
-GET /api/failures/sector/{name}— all failures for a specific sector + risk summary
-GET /api/failures/{id}         — full detail including full_article, key_fields
+GET /api/failures  
+GET /api/failures/stats
+GET /api/failures/{id}      
 """

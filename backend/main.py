@@ -1,5 +1,6 @@
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -8,32 +9,40 @@ from loguru import logger
 
 from storage.db import get_db
 from storage.schema import create_schema
+from routers import groq as groq_router
 
 from routers import opportunities
-from routers import will_not_use_this_probably
 from routers import failures
 from routers import search
-from routers import watchlist
 from routers import briefings
-from routers import pipeline       
+from routers import pipeline        
 
 load_dotenv()
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting TBD backend...")
+    logger.info("Starting Findout backend...")
     con = get_db()
     create_schema(con)
     logger.success("Database ready.")
+    try:
+        import sys
+        scripts = Path(__file__).resolve().parent.parent / "scripts"
+        if str(scripts) not in sys.path:
+            sys.path.insert(0, str(scripts))
+        import query_engine
+        query_engine._load_tfidf()
+        logger.success("TF-IDF index pre-loaded.")
+    except Exception as e:
+        logger.warning(f"Search pre-warm failed (non-fatal): {e}")
+
     yield
-    logger.info("Shutting down TBD backend.")
+    logger.info("Shutting down.")
 
 
 app = FastAPI(
-    title="Founder Opportunity Intelligence Platform",
-    description="Aggregates public opportunity signals for founders and students.",
-    version="0.1.0",
+    title="Findout — Founder Intelligence Platform",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -46,13 +55,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(opportunities.router, prefix="/api/opportunities", tags=["Opportunities"])
-app.include_router(will_not_use_this_probably.router,       prefix="/api/sectors",       tags=["Sectors"])
 app.include_router(failures.router,      prefix="/api/failures",      tags=["Failures"])
 app.include_router(search.router,        prefix="/api/search",        tags=["Search"])
-app.include_router(watchlist.router,     prefix="/api/watchlist",     tags=["Watchlist"])
 app.include_router(briefings.router,     prefix="/api/briefings",     tags=["Briefings"])
-app.include_router(pipeline.router,      prefix="/api/pipeline",      tags=["Pipeline"])  # ← NEW
+app.include_router(pipeline.router,      prefix="/api/pipeline",      tags=["Pipeline"])
+app.include_router(groq_router.router, prefix="/api/groq", tags=["Groq AI"])
 
 
 @app.get("/api/health", tags=["Health"])

@@ -1,88 +1,47 @@
 import json
 import math
-import os
+import sys
+from pathlib import Path
 from typing import Optional
 
-import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from loguru import logger
-from groq import Groq
-from dotenv import load_dotenv
 
 from storage.db import get_db
 
-load_dotenv()
-
 router = APIRouter()
 
-def _get_groq_client() -> Groq:
-    key = os.getenv("GROQ_API_KEY", "").strip()
-    if not key:
+
+def _get_engine():
+    _scripts = Path(__file__).resolve().parent.parent.parent / "scripts"
+    if str(_scripts) not in sys.path:
+        sys.path.insert(0, str(_scripts))
+    try:
+        import query_engine
+        return query_engine
+    except ImportError as e:
         raise HTTPException(
-            status_code=500,
-            detail="GROQ_API_KEY not set in .env"
+            status_code=503,
+            detail=f"Query engine not found at {_scripts}. "
+                   f"Make sure scripts/query_engine.py exists. Error: {e}"
         )
-    return Groq(api_key=key)
+
 
 
 class SearchRequest(BaseModel):
-    query:      str
-    sources:    list[str] = []          
-    limit:      int       = 20
-    offset:     int       = 0
+    query:            str
+    sources:          list[str] = []
+    limit:            int       = 20
+    offset:           int       = 0
+    include_failures: bool      = True
+    use_embeddings:   bool      = True
 
 
-class SearchResponse(BaseModel):
-    query:           str
-    interpreted_as:  dict               
-    total:           int
-    results:         list[dict]
-
-SYSTEM_PROMPT = """work on the prompt idiot
-"""
+class CompareRequest(BaseModel):
+    sectors: list[str] = []
 
 
-def interpret_query(query: str) -> dict:
-
-    client = _get_groq_client()
-
-    try:
-        resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user",   "content": query},
-            ],
-            max_tokens=300,
-            temperature=0.1,    
-        )
-        raw = resp.choices[0].message.content.strip()
-
-        raw = raw.replace("```json", "").replace("```", "").strip()
-        parsed = json.loads(raw)
-
-        return {
-            "keywords":       parsed.get("keywords", []),
-            "sectors":        parsed.get("sectors", []),
-            "intent":         parsed.get("intent", query),
-            "min_funding":    parsed.get("min_funding"),
-            "max_funding":    parsed.get("max_funding"),
-            "sources":        parsed.get("sources", []),
-            "time_sensitive": parsed.get("time_sensitive", False),
-        }
-
-    except (json.JSONDecodeError, Exception) as e:
-        logger.warning(f"Groq interpretation failed: {e} — falling back to keyword search")
-        return {
-            "keywords":       query.split()[:5],
-            "sectors":        [],
-            "intent":         query,
-            "min_funding":    None,
-            "max_funding":    None,
-            "sources":        [],
-            "time_sensitive": False,
-        }
 
 def _clean(record: dict) -> dict:
     out = {}
@@ -97,101 +56,44 @@ def _clean(record: dict) -> dict:
     return out
 
 
-def search_opportunities(interpreted: dict, sources_override: list[str],
-                         limit: int, offset: int, con) -> tuple[int, list[dict]]:
-
-    keywords = interpreted.get("keywords", [])
-    sectors  = interpreted.get("sectors", [])
-    sources  = sources_override or interpreted.get("sources", [])
-    min_fund = interpreted.get("min_funding")
-    max_fund = interpreted.get("max_funding")
-
-    wheres = []
-    params = []
-    if keywords:
-        kw_clauses = []
-        for kw in keywords:
-            kw_clauses.append("(title ILIKE ? OR description ILIKE ?)")
-            params += [f"%{kw}%", f"%{kw}%"]
-        wheres.append("(" + " OR ".join(kw_clauses) + ")")
-
-    if sectors:
-        sector_clauses = " OR ".join("sector ILIKE ?" for _ in sectors)
-        wheres.append(f"({sector_clauses})")
-        params += [f"%{s}%" for s in sectors]
-
-    if sources:
-        placeholders = ", ".join("?" for _ in sources)
-        wheres.append(f"source IN ({placeholders})")
-        params += sources
-
-    if min_fund is not None:
-        wheres.append("funding_max >= ?")
-        params.append(min_fund)
-    if max_fund is not None:
-        wheres.append("funding_max <= ?")
-        params.append(max_fund)
-
-    wheres.append("(close_date IS NULL OR close_date >= CURRENT_DATE)")
-
-    where_clause = "WHERE " + " AND ".join(wheres) if wheres else ""
-    relevance_parts = []
-    relevance_params = []
-    for kw in keywords:
-        relevance_parts.append("(CASE WHEN title ILIKE ? THEN 2 ELSE 0 END)")
-        relevance_params.append(f"%{kw}%")
-        relevance_parts.append("(CASE WHEN description ILIKE ? THEN 1 ELSE 0 END)")
-        relevance_params.append(f"%{kw}%")
-
-    relevance_expr = (
-        "(" + " + ".join(relevance_parts) + ") AS relevance_score"
-        if relevance_parts else "1 AS relevance_score"
-    )
-
-    total = int(con.execute(
-        f"SELECT COUNT(*) FROM unified_opportunities {where_clause}", params
-    ).fetchone()[0])
-
-    rows = con.execute(f"""
-        SELECT
-            opp_id, source, title, sector, agency,
-            funding_min, funding_max,
-            posted_date::VARCHAR  AS posted_date,
-            close_date::VARCHAR   AS close_date,
-            eligibility,
-            array_to_string(tags, ',') AS tags,
-            {relevance_expr}
-        FROM unified_opportunities
-        {where_clause}
-        ORDER BY relevance_score DESC, posted_date DESC NULLS LAST
-        LIMIT ? OFFSET ?
-    """, relevance_params + params + [limit, offset]).fetchdf()
-
-    return total, [_clean(r) for r in rows.fillna("").to_dict(orient="records")]
 
 @router.post("")
 def semantic_search(req: SearchRequest):
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
 
-    logger.info(f"Search query: '{req.query}'")
-    interpreted = interpret_query(req.query)
-    logger.info(f"Interpreted as: {interpreted}")
-    con = get_db()
-    total, results = search_opportunities(
-        interpreted, req.sources, req.limit, req.offset, con
+    engine = _get_engine()
+    con    = get_db()
+
+    logger.info(f"Search: '{req.query}'  sources={req.sources or 'all'}")
+
+    results = engine.search(
+        query            = req.query,
+        sources          = req.sources or None,
+        limit            = req.limit,
+        offset           = req.offset,
+        include_failures = req.include_failures,
+        use_embeddings   = req.use_embeddings,
+        con              = con,
     )
 
-    return {
-        "query":          req.query,
-        "interpreted_as": interpreted,
-        "total":          total,
-        "results":        results,
-    }
+    results["results"]  = [_clean(r) for r in results.get("results", [])]
+    results["failures"] = [_clean(f) for f in results.get("failures", [])]
+
+    return results
+
+
+@router.post("/compare")
+def compare_domains(req: CompareRequest):
+    engine = _get_engine()
+    con    = get_db()
+    data   = engine.compare_domains(req.sectors, con=con)
+    return {"sectors": data}
 
 
 @router.get("/suggest")
-def suggest(q: str = "") -> dict:
+def suggest(q: str = Query("", min_length=0)) -> dict:
+    """Autocomplete sectors and agencies for the search bar."""
     if len(q) < 2:
         return {"sectors": [], "agencies": []}
 
@@ -201,21 +103,60 @@ def suggest(q: str = "") -> dict:
         SELECT DISTINCT sector
         FROM unified_opportunities
         WHERE sector ILIKE ? AND sector IS NOT NULL
-        ORDER BY sector LIMIT 5
+        ORDER BY sector LIMIT 6
     """, [f"%{q}%"]).fetchall()
 
     agencies = con.execute("""
         SELECT DISTINCT agency
         FROM unified_opportunities
         WHERE agency ILIKE ? AND agency IS NOT NULL AND agency != ''
-        ORDER BY agency LIMIT 5
+        ORDER BY agency LIMIT 6
     """, [f"%{q}%"]).fetchall()
 
     return {
         "sectors":  [r[0] for r in sectors],
         "agencies": [r[0] for r in agencies],
     }
-"""
-POST /api/search          — Groq
-GET  /api/search/suggest  — autocomplete 
-"""
+
+
+@router.get("/health")
+def search_health():
+    from pathlib import Path
+    _backend = Path(__file__).resolve().parent.parent
+
+    index_dir    = _backend / "data" / "search_index"
+    tfidf_ready  = (index_dir / "tfidf_matrix.npy").exists()
+    embed_ready  = (index_dir / "embeddings_matrix.npy").exists()
+
+    tfidf_size   = None
+    embed_size   = None
+    tfidf_count  = None
+    embed_count  = None
+
+    if tfidf_ready:
+        ids_path    = index_dir / "tfidf_record_ids.json"
+        tfidf_count = len(json.loads(ids_path.read_text())) if ids_path.exists() else None
+        tfidf_size  = round((index_dir / "tfidf_matrix.npy").stat().st_size / 1e6, 1)
+
+    if embed_ready:
+        ids_path    = index_dir / "embedding_record_ids.json"
+        embed_count = len(json.loads(ids_path.read_text())) if ids_path.exists() else None
+        embed_size  = round((index_dir / "embeddings_matrix.npy").stat().st_size / 1e6, 1)
+
+    return {
+        "tfidf": {
+            "ready":   tfidf_ready,
+            "records": tfidf_count,
+            "size_mb": tfidf_size,
+        },
+        "embeddings": {
+            "ready":   embed_ready,
+            "records": embed_count,
+            "size_mb": embed_size,
+        },
+        "mode": (
+            "tfidf+embeddings" if (tfidf_ready and embed_ready) else
+            "tfidf"            if tfidf_ready else
+            "sql_fallback"
+        ),
+    }

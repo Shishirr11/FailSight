@@ -45,8 +45,6 @@ CREATE TABLE IF NOT EXISTS failures_unified (
 );
 """
 
-# PRIMARY KEY is (record_id, source) — same record can be enriched from
-# multiple sources (e.g. OpenAlex + PubMed).
 ENRICHED_DETAILS = """
 CREATE TABLE IF NOT EXISTS enriched_details (
     record_id           VARCHAR  NOT NULL,
@@ -111,8 +109,6 @@ GROUP BY o.sector
 ORDER BY total_opps DESC;
 """
 
-# sam/grants: must be open + posted within 180 days
-# patents/research: evergreen — always show
 OPEN_OPPORTUNITIES_VIEW = """
 CREATE OR REPLACE VIEW open_opportunities AS
 SELECT * FROM unified_opportunities

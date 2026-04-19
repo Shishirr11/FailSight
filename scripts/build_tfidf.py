@@ -4,7 +4,7 @@ import pickle
 import argparse
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "backend"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 from storage.db import get_db
 from loguru import logger
@@ -13,7 +13,7 @@ from tqdm import tqdm
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
-INDEX_DIR     = Path(__file__).resolve().parent.parent.parent / "backend" / "data" / "search_index"
+INDEX_DIR     = Path(__file__).resolve().parent.parent / "backend" / "data" / "search_index"
 VECTORIZER_PATH = INDEX_DIR / "tfidf_vectorizer.pkl"
 MATRIX_PATH     = INDEX_DIR / "tfidf_matrix.npy"
 IDS_PATH        = INDEX_DIR / "tfidf_record_ids.json"

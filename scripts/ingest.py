@@ -14,6 +14,7 @@ from storage.schema import create_schema
 from storage.writer import write_records
 from loguru import logger
 
+
 def _log_run(con, source: str, rows: int, status: str,
              started: datetime, error: str = "") -> None:
     con.execute("""
@@ -25,13 +26,12 @@ def _log_run(con, source: str, rows: int, status: str,
         source, rows, status, error,
     ])
 
+
 def run_source(
     source: str,
     con,
-    from_disk: bool = False,
-    fetch_detail: bool = True,
-    deep_failory: bool = True,
-    include_failory: bool = True,
+    from_disk:    bool = False,
+    fetch_detail: bool = False,
     **kwargs,
 ) -> int:
     started = datetime.now()
@@ -42,27 +42,38 @@ def run_source(
     try:
         if source == "grants":
             from collectors.grants_collector import fetch_grants, load_from_disk, save_raw
-            if from_disk:
-                records = load_from_disk()
-            else:
-                records = fetch_grants(fetch_detail=fetch_detail)
+            records = load_from_disk() if from_disk else fetch_grants(fetch_detail=fetch_detail)
+            if not from_disk and records:
                 save_raw(records)
 
         elif source == "sam":
             from collectors.sam_collector import fetch_sam, load_from_disk, save_raw
-            days = kwargs.get("days_back", 90)
             if from_disk:
                 records = load_from_disk()
             else:
-                records = fetch_sam(days_back=days, fetch_detail=fetch_detail)
+                records = fetch_sam(
+                    days_back    = kwargs.get("days_back", 90),
+                    fetch_detail = fetch_detail,
+                )
+                if records:
+                    save_raw(records)
+
+        elif source == "sbir":
+            from collectors.sbir_collector import fetch_sbir, load_from_disk, save_raw
+            records = load_from_disk() if from_disk else fetch_sbir()
+            if not from_disk and records:
+                save_raw(records)
+
+        elif source == "nsf":
+            from collectors.nsf_collector import fetch_nsf, load_from_disk, save_raw
+            records = load_from_disk() if from_disk else fetch_nsf()
+            if not from_disk and records:
                 save_raw(records)
 
         elif source == "research":
             from collectors.research_collector import fetch_research, load_from_disk, save_raw
-            if from_disk:
-                records = load_from_disk()
-            else:
-                records = fetch_research()
+            records = load_from_disk() if from_disk else fetch_research()
+            if not from_disk and records:
                 save_raw(records)
 
         elif source == "patents":
@@ -71,7 +82,7 @@ def run_source(
                 try:
                     records = load_from_disk()
                 except FileNotFoundError:
-                    logger.warning("Patents: no files on disk (API may be migrating) — skipping.")
+                    logger.warning("Patents: no files on disk — skipping.")
                     return 0
             else:
                 records = fetch_patents()
@@ -82,18 +93,21 @@ def run_source(
                 save_raw(records)
 
         elif source == "failures":
-            from collectors.failures_collector import fetch_failures, load_from_disk, save_raw
-            if from_disk:
-                records = load_from_disk()
-            else:
-                records = fetch_failures(
-                    include_failory=include_failory,
-                    deep=deep_failory,
-                )
+            from collectors.failure_collector import fetch_failures, load_from_disk, save_raw
+            records = load_from_disk() if from_disk else fetch_failures(
+                include_failory = True,
+                deep            = not kwargs.get("no_deep", False),
+            )
+            if not from_disk and records:
                 save_raw(records)
 
         else:
             logger.error(f"Unknown source: {source}")
+            return 0
+
+        if not records:
+            logger.warning(f"{source}: no records returned.")
+            _log_run(con, source, 0, "empty", started)
             return 0
 
         n = write_records(records, source, con)
@@ -102,38 +116,26 @@ def run_source(
 
     except Exception as e:
         logger.error(f"{source} failed: {e}")
+        import traceback; traceback.print_exc()
         _log_run(con, source, 0, "error", started, str(e))
         return 0
 
-ALL_SOURCES = ["grants", "sam", "research", "patents", "failures"]
+
+ALL_SOURCES = ["grants", "sam", "sbir", "nsf", "research", "patents", "failures"]
+
 
 def main():
     parser = argparse.ArgumentParser(
-        description="do it",
+        description="Findout data ingest pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument(
-        "--source", choices=ALL_SOURCES, default=None
-    )
-    parser.add_argument(
-        "--disk", action="store_true"
-    )
-    parser.add_argument(
-        "--no-detail", action="store_true"
-
-    )
-    parser.add_argument(
-        "--skip-failures", action="store_true"
-    )
-    parser.add_argument(
-        "--no-deep", action="store_true"
-    )
-    parser.add_argument(
-        "--days", type=int, default=90
-    )
-    parser.add_argument(
-        "--build-index", action="store_true"
-    )
+    parser.add_argument("--source",        choices=ALL_SOURCES, default=None)
+    parser.add_argument("--disk",          action="store_true")
+    parser.add_argument("--no-detail",     action="store_true")
+    parser.add_argument("--skip-failures", action="store_true")
+    parser.add_argument("--no-deep",       action="store_true")
+    parser.add_argument("--days",          type=int, default=90)
+    parser.add_argument("--build-index",   action="store_true")
     args = parser.parse_args()
 
     start_time = datetime.now()
@@ -145,18 +147,18 @@ def main():
         sources.remove("failures")
 
     logger.info(f"Ingest starting — sources: {sources}")
-    logger.info(f"Options: disk={args.disk} | detail={not args.no_detail} | deep={not args.no_deep}")
+    logger.info(f"Options: disk={args.disk} | detail={not args.no_detail} | "
+                f"deep={not args.no_deep} | days={args.days}")
 
     results: dict[str, int] = {}
     for source in sources:
         n = run_source(
-            source          = source,
-            con             = con,
-            from_disk       = args.disk,
-            fetch_detail    = not args.no_detail,
-            deep_failory    = not args.no_deep,
-            include_failory = True,
-            days_back       = args.days,
+            source       = source,
+            con          = con,
+            from_disk    = args.disk,
+            fetch_detail = not args.no_detail,
+            days_back    = args.days,
+            no_deep      = args.no_deep,
         )
         results[source] = n
 
@@ -171,7 +173,7 @@ def main():
     total_opps  = con.execute("SELECT COUNT(*) FROM unified_opportunities").fetchone()[0]
     total_fails = con.execute("SELECT COUNT(*) FROM failures_unified").fetchone()[0]
     total_enr   = con.execute("SELECT COUNT(*) FROM enriched_details").fetchone()[0]
-    logger.info(f"\n  DB state:")
+    logger.info(f"\n  DB totals:")
     logger.info(f"    unified_opportunities : {total_opps:,}")
     logger.info(f"    failures_unified      : {total_fails:,}")
     logger.info(f"    enriched_details      : {total_enr:,}")
@@ -179,7 +181,6 @@ def main():
     if args.build_index:
         logger.info("\nBuilding search indexes...")
         scripts_dir = Path(__file__).resolve().parent
-
         import subprocess
         for script in ["build_tfidf.py", "build_embeddings.py"]:
             script_path = scripts_dir / script
@@ -187,14 +188,13 @@ def main():
                 logger.info(f"  Running {script}...")
                 subprocess.run([sys.executable, str(script_path)], check=False)
             else:
-                logger.warning(f"  {script} not found — run manually after building it.")
+                logger.warning(f"  {script} not found.")
+
 
 if __name__ == "__main__":
     main()
 
-"""                    
-    python scripts/ingest.py --source grants        
-    python scripts/ingest.py --disk                 
-    python scripts/ingest.py --source grants --disk
-    python scripts/ingest.py --skip-failures                
+"""                              
+  python scripts/ingest.py --source grants       
+  python scripts/ingest.py --build-index          
 """

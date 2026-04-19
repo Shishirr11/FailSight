@@ -365,6 +365,162 @@ def _norm_sam(r: dict) -> tuple[dict, dict]:
     }
     return opp, enr
 
+def _norm_sbir(r: dict) -> tuple[dict, dict]:
+    title   = r.get("Award Title") or r.get("award_title") or ""
+    sector  = r.get("_sector") or infer_sector(title, "")
+    firm    = r.get("Company") or r.get("firm") or ""
+    agency  = r.get("Agency") or r.get("agency") or ""
+    branch  = r.get("Branch") or r.get("branch") or ""
+    state   = r.get("State") or r.get("state") or "US"
+ 
+    def _to_str(v):
+        if isinstance(v, list): return " ".join(str(x) for x in v if x)
+        return str(v) if v else ""
+
+    abstract = _to_str(r.get("abstractText") or r.get("publicAbstractText"))
+    awardee  = _to_str(r.get("awardeeName") or r.get("orgLongName"))
+    pi       = _to_str(r.get("pdPIName") or f"{r.get('piFirstName','')} {r.get('piLastName','')}".strip())
+    agency   = _to_str(r.get("agency"))
+
+    amount = _safe_float(
+        r.get("fundsObligatedAmt") or
+        r.get("fundsObligated") or
+        r.get("estimatedTotalAmt")
+    )
+
+    full_text = " ".join(filter(None, [
+        _to_str(r.get("title")),
+        abstract, awardee, pi,
+        r.get("_keyword", ""),
+        _to_str(r.get("primaryProgram")),
+        _to_str(r.get("fundProgramName")),
+    ]))
+ 
+    year = r.get("Award Year") or r.get("award_year") or ""
+    posted_date = _safe_date(str(year)) if year else None
+ 
+    close_date = _safe_date(
+        r.get("Contract End Date") or r.get("contract_end_date")
+    )
+ 
+    full_text = " ".join(filter(None, [
+        title, abstract, firm, agency, branch,
+        r.get("_keyword", ""),
+    ]))
+ 
+    agency_str = " — ".join(filter(None, [agency, branch, firm]))
+ 
+    opp = {
+        "opp_id":      r["_foip_id"],
+        "source":      "sbir",
+        "title":       title,
+        "description": abstract[:1000] if abstract else "",
+        "sector":      sector,
+        "naics_code":  None,
+        "posted_date": posted_date,
+        "close_date":  close_date,
+        "funding_min": None,
+        "funding_max": amount,
+        "agency":      f"NSF — {awardee}"[:300] if awardee else "NSF",
+        "geography":   _to_str(r.get("perfStateCode") or r.get("awardeeStateCode")) or "US",
+        "eligibility": "Small Business (SBIR/STTR)",
+        "tags":        list(filter(None, [sector, "SBIR", "small business", agency])),
+        "raw_json":    json.dumps(r, default=str),
+    }
+ 
+    key_fields = {
+        "firm":                firm,
+        "agency":              agency,
+        "branch":              branch,
+        "phase":               r.get("Phase") or r.get("phase"),
+        "program":             r.get("Program") or r.get("program") or "SBIR",
+        "award_amount":        amount,
+        "award_year":          year,
+        "contract":            r.get("Contract") or r.get("contract"),
+        "solicitation_number": r.get("Solicitation Number") or r.get("solicitation_number"),
+        "topic_code":          r.get("Topic Code") or r.get("topic_code"),
+        "pi_name":             r.get("PI Name") or r.get("pi_name"),
+        "pi_email":            r.get("PI Email") or r.get("pi_email"),
+        "contact_name":        r.get("Contact Name") or r.get("poc_name"),
+        "contact_email":       r.get("Contact Email") or r.get("poc_email"),
+        "company_url":         r.get("Company Website") or r.get("company_url"),
+        "state":               state,
+        "hubzone":             r.get("HUBZone Owned") or r.get("hubzone_owned"),
+        "women_owned":         r.get("Women Owned") or r.get("women_owned"),
+        "num_employees":       r.get("Number Employees") or r.get("number_employees"),
+    }
+ 
+    enr = {
+        "record_id":   opp["opp_id"],
+        "record_type": "opportunity",
+        "source":      "sbir",
+        "full_text":   full_text[:50_000],
+        "summary":     _extractive_summary(full_text),
+        "key_fields":  key_fields,
+    }
+    return opp, enr
+
+def _norm_nsf(r: dict) -> tuple[dict, dict]:
+    def s(v):
+        if isinstance(v, list): return " ".join(str(x) for x in v if x)
+        return str(v).strip() if v else ""
+
+    title    = s(r.get("title"))
+    sector   = r.get("_sector") or infer_sector(title, r.get("_keyword", ""))
+    awardee  = s(r.get("awardeeName") or r.get("awardee") or r.get("orgLongName"))
+    pi       = s(r.get("pdPIName") or f"{r.get('piFirstName','')} {r.get('piLastName','')}".strip())
+    abstract = s(r.get("abstractText"))
+    program  = s(r.get("program") or r.get("fundProgramName") or r.get("primaryProgram"))
+    state    = s(r.get("perfStateCode") or r.get("awardeeStateCode"))
+
+    amount = _safe_float(r.get("fundsObligatedAmt") or r.get("estimatedTotalAmt"))
+
+    full_text = " ".join(filter(None, [
+        title, abstract, awardee, pi, program, r.get("_keyword", "")
+    ]))
+
+    opp = {
+        "opp_id":      r["_foip_id"],
+        "source":      "nsf",
+        "title":       title,
+        "description": abstract[:1000],
+        "sector":      sector,
+        "naics_code":  None,
+        "posted_date": _safe_date(r.get("startDate")),
+        "close_date":  _safe_date(r.get("expDate")),
+        "funding_min": None,
+        "funding_max": amount,
+        "agency":      f"NSF — {awardee}"[:300] if awardee else "NSF",
+        "geography":   state or "US",
+        "eligibility": None,
+        "tags":        list(filter(None, [sector, r.get("_keyword", ""), "NSF"])),
+        "raw_json":    json.dumps(r, default=str),
+    }
+    key_fields = {
+        "nsf_id":      r.get("id"),
+        "awardee":     awardee,
+        "pi_name":     pi,
+        "pi_email":    s(r.get("piEmail")),
+        "amount":      amount,
+        "program":     program,
+        "cfda":        s(r.get("cfdaNumber")),
+        "start_date":  s(r.get("startDate")),
+        "exp_date":    s(r.get("expDate")),
+        "trans_type":  s(r.get("transType")),
+        "dir":         s(r.get("dirAbbr")),
+        "div":         s(r.get("divAbbr")),
+    }
+    enr = {
+        "record_id":   opp["opp_id"],
+        "record_type": "opportunity",
+        "source":      "nsf",
+        "full_text":   full_text[:50_000],
+        "summary":     _extractive_summary(full_text),
+        "key_fields":  key_fields,
+    }
+    return opp, enr
+
+
 def _norm_research(r: dict) -> tuple[dict, dict]:
     title   = r.get("display_name") or r.get("title") or ""
     sector  = r.get("_sector") or infer_sector(title, r.get("_query", ""))
@@ -605,6 +761,8 @@ def _norm_failure(r: dict) -> tuple[dict, dict]:
 _NORMALIZERS = {
     "grants":   _norm_grants,
     "sam":      _norm_sam,
+    "sbir":     _norm_sbir,
+    "nsf":      _norm_nsf,
     "research": _norm_research,
     "patents":  _norm_patents,
     "failures": _norm_failure,
@@ -647,7 +805,8 @@ def write_records(records: list[dict], source: str, con=None) -> int:
             main_rows.append(main_row)
             enr_rows.append(enr_row)
         except Exception as e:
-            logger.warning(f"  Skipping record ({source}): {e}")
+            # logger.warning(f"  Skipping record ({source}): {e}")
+            continue
 
     if not main_rows:
         logger.warning(f"write_records({source}): 0 valid rows after normalization.")

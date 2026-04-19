@@ -3,14 +3,14 @@ import json
 import argparse
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "backend"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 from storage.db import get_db
 from loguru import logger
 from tqdm import tqdm
 import numpy as np
 
-INDEX_DIR   = Path(__file__).resolve().parent.parent.parent / "backend" / "data" / "search_index"
+INDEX_DIR   = Path(__file__).resolve().parent.parent / "backend" / "data" / "search_index"
 EMBED_PATH  = INDEX_DIR / "embeddings_matrix.npy"
 IDS_PATH    = INDEX_DIR / "embedding_record_ids.json"
 
@@ -22,13 +22,12 @@ def build(model_name: str = "all-mpnet-base-v2", batch_size: int = 32):
 
     if torch.backends.mps.is_available():
         device = "mps"
-        logger.info("Using Apple MPS (Metal) backend — M3 GPU acceleration enabled.")
+        logger.info("got the MPS ")
     elif torch.cuda.is_available():
         device = "cuda"
-        logger.info("Using CUDA GPU.")
     else:
         device = "cpu"
-        logger.info("Using CPU — consider smaller model (all-MiniLM-L6-v2) for speed.")
+        logger.info("Using MiniLM.")
 
     logger.info(f"Loading model: {model_name}")
     model = SentenceTransformer(model_name, device=device)
@@ -51,7 +50,6 @@ def build(model_name: str = "all-mpnet-base-v2", batch_size: int = 32):
         return
 
     logger.info(f"Generating embeddings for {len(records):,} records (batch_size={batch_size})...")
-    logger.info(f"Estimated time on M3: ~{len(records) // (batch_size * 10) + 1} minutes")
 
     record_ids  = []
     all_embeddings = []

@@ -7,7 +7,7 @@ export async function fetchSectorBriefing(sector) {
     body: JSON.stringify({ sector }),
   });
   if (!res.ok) throw new Error(`Briefing failed: ${res.status}`);
-  return res.json(); // { sector, briefing, data }
+  return res.json(); 
 }
 
 export async function explainOpportunity(opp_id, user_context = "") {
@@ -17,5 +17,5 @@ export async function explainOpportunity(opp_id, user_context = "") {
     body: JSON.stringify({ opp_id, user_context }),
   });
   if (!res.ok) throw new Error(`Explainer failed: ${res.status}`);
-  return res.json(); // { opp_id, title, explanation }
+  return res.json(); 
 }

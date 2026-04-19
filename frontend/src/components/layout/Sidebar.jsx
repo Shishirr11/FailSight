@@ -1,61 +1,58 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Bookmark, FlaskConical, ChevronLeft, ChevronRight, Zap } from 'lucide-react'
+import { Home, Cpu, Skull, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const LINKS = [
-  { to: '/home',         icon: Home,         label: 'Home'             },
-  { to: '/watchlist',    icon: Bookmark,     label: 'Watchlist'        },
-  { to: '/trial-errors', icon: FlaskConical, label: 'Trial & Errors'   },
+  { to: '/home',         icon: Home,  label: 'Findout'        },
+  { to: '/intelligence', icon: Cpu,   label: 'Intelligence'   },
+  { to: '/graveyard',    icon: Skull, label: 'Death of Ideas' },
 ]
 
 export default function Sidebar({ open, onToggle }) {
   return (
-    <aside
-      className={`
-        relative flex flex-col h-screen shrink-0
-        bg-surface-900 border-r border-white/[0.06]
-        transition-all duration-200 ease-in-out
-        ${open ? 'w-52' : 'w-14'}
-      `}
-    >
-      {}
-      <div className={`flex items-center gap-2.5 px-4 py-5 border-b border-white/[0.06] ${!open && 'justify-center px-0'}`}>
-        <div className="shrink-0 w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-          <Zap size={14} className="text-white" />
-        </div>
-        {open && (
+    <aside className={`
+      relative flex flex-col h-screen shrink-0 bg-white
+      border-r border-grey-200 transition-all duration-200 ease-in-out
+      ${open ? 'w-56' : 'w-16'}
+    `}>
+
+      <div className={`
+        flex items-center gap-3 px-4 py-5 border-b border-grey-100
+        ${!open && 'justify-center px-0'}
+      `}>
+     <img src="/brain-logo.png" alt="Failsight" className="shrink-0 w-8 h-8 object-contain" />        
+     {open && (
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-100 tracking-tight leading-none">Findout</p>
-            <p className="text-2xs text-slate-500 mt-0.5">Intelligence Platform</p>
+            <p className="text-base text-3xl font-bold text-grey-900 leading-none tracking-tight font-display">
+              Failsight
+            </p>
+            <p className="text-xs text-grey-400 mt-0.5 font-medium">Founders Intelligence</p>
           </div>
         )}
       </div>
 
-      {}
-      <nav className="flex-1 px-2 py-3 space-y-0.5">
+      <nav className="flex-1 px-2 py-3 space-y-1">
         {LINKS.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             title={!open ? label : undefined}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-sm font-medium
-               transition-colors group relative
-               ${isActive
-                 ? 'bg-brand-600/15 text-brand-400'
-                 : 'text-slate-500 hover:bg-white/[0.05] hover:text-slate-200'
-               }
-               ${!open && 'justify-center px-0'}`
-            }
+            className={({ isActive }) => `
+              flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold
+              transition-colors relative
+              ${isActive
+                ? 'bg-green-50 text-green-700'
+                : 'text-grey-500 hover:bg-grey-50 hover:text-grey-800'
+              }
+              ${!open && 'justify-center px-0'}
+            `}
           >
             {({ isActive }) => (
               <>
-                <Icon size={16} className={`shrink-0 ${isActive ? 'text-brand-400' : ''}`} />
+                <Icon size={18} className={`shrink-0 ${isActive ? 'text-green-600' : ''}`} />
                 {open && <span className="truncate">{label}</span>}
-
-                {}
                 {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5
-                                   bg-brand-500 rounded-r-full" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6
+                                   bg-green-500 rounded-r-full" />
                 )}
               </>
             )}
@@ -63,15 +60,14 @@ export default function Sidebar({ open, onToggle }) {
         ))}
       </nav>
 
-      {}
       <button
         onClick={onToggle}
-        className="flex items-center justify-center mx-auto mb-4
-                   w-7 h-7 rounded-lg bg-white/[0.05] hover:bg-white/[0.1]
-                   text-slate-400 hover:text-slate-200 transition-colors"
-        title={open ? 'Collapse sidebar' : 'Expand sidebar'}
+        className="flex items-center justify-center mx-auto mb-5 w-8 h-8 rounded-lg
+                   bg-grey-100 hover:bg-grey-200 text-grey-500 hover:text-grey-700
+                   transition-colors"
+        title={open ? 'Collapse' : 'Expand'}
       >
-        {open ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+        {open ? <ChevronLeft size={15} /> : <ChevronRight size={15} />}
       </button>
     </aside>
   )

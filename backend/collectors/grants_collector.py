@@ -450,8 +450,6 @@ if __name__ == "__main__":
     logger.success(f"Done — {n} new grants rows in DB.")
 
 """
-    python -m collectors.grants_collector --probe  
-    python -m collectors.grants_collector          
+    python -m collectors.grants_collector --probe        
     python -m collectors.grants_collector --disk   
-    python -m collectors.grants_collector --limit 3 --no-detail  
 """

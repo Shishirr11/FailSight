@@ -283,11 +283,6 @@ def fetch_patents(
     max_per_cpc: int = 200,
     since_year: int = SINCE_YEAR,
 ) -> list[dict]:
-    """
-        cpc_queries:  List of (cpc_prefix, sector_label) tuples
-        max_per_cpc:  Max patents to fetch per CPC code (default 200)
-        since_year:   Only include patents from this year onward (default 2022)
-    """
     api_key = os.getenv("PATENTSVIEW_API_KEY", "").strip()
     if api_key:
         logger.info("PatentsView: using API key from PATENTSVIEW_API_KEY")
@@ -537,9 +532,6 @@ if __name__ == "__main__":
 
 """
     python -m collectors.patents_collector --probe
-    python -m collectors.patents_collector
-    python -m collectors.patents_collector --disk
-    python -m collectors.patents_collector --max 150 --year 2023
-    python -m collectors.patents_collector --no-detail 
+    python -m collectors.patents_collector --max number
 
 """
