@@ -1,1 +1,5 @@
 *.duckdb filter=lfs diff=lfs merge=lfs -text
+*.npy filter=lfs diff=lfs merge=lfs -text
+*.pkl filter=lfs diff=lfs merge=lfs -text
+backend/data/raw/research/** filter=lfs diff=lfs merge=lfs -text
+backend/data/raw/sbir/** filter=lfs diff=lfs merge=lfs -text
