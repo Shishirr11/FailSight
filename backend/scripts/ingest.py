@@ -69,10 +69,14 @@ def run_source(
             records = load_from_disk() if from_disk else fetch_nsf()
             if not from_disk and records:
                 save_raw(records)
-
+              
         elif source == "research":
-            from collectors.research_collector import fetch_research, load_from_disk, save_raw
-            records = load_from_disk() if from_disk else fetch_research()
+            from collectors.research_collector import fetch_research, load_from_disk, save_raw, RESEARCH_TOPICS
+            if from_disk:
+                records = load_from_disk()
+            else:
+                topics = RESEARCH_TOPICS[:kwargs["limit"]] if kwargs.get("limit") else RESEARCH_TOPICS
+                records = fetch_research(topics=topics)
             if not from_disk and records:
                 save_raw(records)
 
@@ -136,6 +140,8 @@ def main():
     parser.add_argument("--no-deep",       action="store_true")
     parser.add_argument("--days",          type=int, default=90)
     parser.add_argument("--build-index",   action="store_true")
+    parser.add_argument("--limit", type=int, default=None,
+                    help="Limit research topics to first N (only applies to --source research)")
     args = parser.parse_args()
 
     start_time = datetime.now()
@@ -159,6 +165,7 @@ def main():
             fetch_detail = not args.no_detail,
             days_back    = args.days,
             no_deep      = args.no_deep,
+            limit = args.limit,
         )
         results[source] = n
 
