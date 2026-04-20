@@ -3,7 +3,13 @@
 One place to see what funding exists, what companies have failed before you, and whether your idea has a real chance. No paywalls, no signups — all data pulled from public sources and stored locally.
 
 ---
+## The Trade Off
 
+**Search Index Size**
+The TF-IDF matrix is the large thing in the project. At default settings (max_features=50,000, ngram_range=(1,2)), it builds to 6.6GB — too large for any affordable hosting tier. For deployment, rebuild with max_features=5,000, ngram_range=(1,1), and min_df=3. Dropping bigrams is the biggest lever — it roughly halves vocabulary size at the same feature count, giving you 10,000-word effective coverage at a 5,000-slot budget. The resulting matrix is  650MB. Sentence embeddings are disabled in production for the same reason — the all-mpnet-base-v2 model loads ~420MB into RAM on first request. TF-IDF alone handles semantic search adequately at this scale.
+
+
+---
 ## Working Stuff
 
 ### Data Sources
