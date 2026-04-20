@@ -7,7 +7,7 @@ echo "Running ingest..."
 python /app/scripts/ingest.py --source failures --disk
 python /app/scripts/ingest.py --source grants --disk
 python /app/scripts/ingest.py --source nsf --disk
-python /app/scripts/ingest.py --source research --disk
+python /app/scripts/ingest.py --source research
 python /app/scripts/ingest.py --source sbir --disk
 
 echo "Building TF-IDF..."
