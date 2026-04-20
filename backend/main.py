@@ -27,9 +27,13 @@ async def lifespan(app: FastAPI):
     logger.success("Database ready.")
     try:
         import sys
-        scripts = Path(__file__).resolve().parent.parent / "scripts"
-        if str(scripts) not in sys.path:
-            sys.path.insert(0, str(scripts))
+        for candidate in [
+            Path(__file__).resolve().parent.parent / "scripts",
+            Path(__file__).resolve().parent / "scripts",
+            Path("/app/scripts"),
+        ]:
+            if candidate.exists() and str(candidate) not in sys.path:
+                sys.path.insert(0, str(candidate))
         import query_engine
         query_engine._load_tfidf()
         logger.success("TF-IDF index pre-loaded.")

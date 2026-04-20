@@ -1,5 +1,4 @@
-const BASE = "/api/search";
-
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
 
 export async function semanticSearch({
   query,
@@ -19,7 +18,7 @@ export async function semanticSearch({
     }),
   });
   if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-  return res.json(); 
+  return res.json();
 }
 
 export async function fetchSuggestions(q = "") {

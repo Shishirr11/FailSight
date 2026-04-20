@@ -1,9 +1,8 @@
-const BASE = "/api/opportunities";
-
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
 
 export async function fetchOpportunities({
   q = "",
-  source = [], 
+  source = [],
   sector = "",
   minFunding = null,
   maxFunding = null,
@@ -25,9 +24,8 @@ export async function fetchOpportunities({
 
   const res = await fetch(`${BASE}?${params}`);
   if (!res.ok) throw new Error(`Failed to fetch opportunities: ${res.status}`);
-  return res.json(); 
+  return res.json();
 }
-
 
 export async function fetchOpportunity(oppId) {
   const res = await fetch(`${BASE}/${oppId}`);
@@ -38,5 +36,5 @@ export async function fetchOpportunity(oppId) {
 export async function fetchStats() {
   const res = await fetch(`${BASE}/stats`);
   if (!res.ok) throw new Error(`Failed to fetch stats: ${res.status}`);
-  return res.json(); 
+  return res.json();
 }

@@ -1,5 +1,4 @@
-const BASE = "/api/pipeline";
-
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
 export async function triggerPipelineRun(source = null) {
   const res = await fetch(`${BASE}/run`, {
     method: "POST",
@@ -13,5 +12,5 @@ export async function triggerPipelineRun(source = null) {
 export async function fetchPipelineStatus() {
   const res = await fetch(`${BASE}/status`);
   if (!res.ok) throw new Error(`Pipeline status failed: ${res.status}`);
-  return res.json(); 
+  return res.json();
 }

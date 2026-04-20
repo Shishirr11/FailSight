@@ -1,5 +1,4 @@
-const BASE = "/api/groq";
-
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
 export async function whyCare(oppId, userQuery) {
   const res = await fetch(`${BASE}/why-care`, {
     method: "POST",
