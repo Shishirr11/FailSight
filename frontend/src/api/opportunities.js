@@ -1,4 +1,4 @@
-const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/opportunities`;
 
 export async function fetchOpportunities({
   q = "",

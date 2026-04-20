@@ -1,4 +1,4 @@
-const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/pipeline`;
 export async function triggerPipelineRun(source = null) {
   const res = await fetch(`${BASE}/run`, {
     method: "POST",

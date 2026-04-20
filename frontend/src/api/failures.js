@@ -1,4 +1,4 @@
-const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/search`;
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/failures`;
 export async function fetchFailureStats() {
   const res = await fetch(`${BASE}/stats`);
   if (!res.ok) throw new Error(`Failed to fetch failure stats: ${res.status}`);
