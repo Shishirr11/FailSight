@@ -10,7 +10,13 @@ export async function semanticSearch({
   const res = await fetch(BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, sources, limit, offset }),
+    body: JSON.stringify({
+      query,
+      sources,
+      limit,
+      offset,
+      use_embeddings: false,
+    }),
   });
   if (!res.ok) throw new Error(`Search failed: ${res.status}`);
   return res.json(); 

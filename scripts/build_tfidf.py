@@ -49,13 +49,22 @@ def build(batch_size: int = 500):
     logger.info("Fitting TF-IDF vectorizer (this may take 30-60 seconds)...")
     vectorizer = TfidfVectorizer(
         sublinear_tf  = True,
-        min_df        = 2,
+        min_df        = 3,
         max_df        = 0.95,
-        max_features  = 50_000,
-        ngram_range   = (1, 2),
+        max_features  = 5_000,
+        ngram_range   = (1, 1),
         strip_accents = "unicode",
         analyzer      = "word",
     )
+    #   vectorizer = TfidfVectorizer(
+    #     sublinear_tf  = True,
+    #     min_df        = 2,
+    #     max_df        = 0.95,
+    #     max_features  = 50_000,
+    #     ngram_range   = (1, 2),
+    #     strip_accents = "unicode",
+    #     analyzer      = "word",
+    # )
     matrix = vectorizer.fit_transform(corpus)
     logger.success(f"Vectorizer fitted — vocab size: {len(vectorizer.vocabulary_):,}")
     logger.info(f"Matrix shape: {matrix.shape} (records × terms)")

@@ -302,7 +302,7 @@ def search(
     limit:            int       = 20,
     offset:           int       = 0,
     include_failures: bool      = True,
-    use_embeddings:   bool      = True,
+    use_embeddings:   bool      = False, # True for local hosting, Downgraded due to fre hosting limitations
     con=None,
 ) -> dict:
 

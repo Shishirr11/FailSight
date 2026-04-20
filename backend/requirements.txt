@@ -1,25 +1,13 @@
 fastapi
 uvicorn
-requests
-
-# Data
+duckdb
 pandas
 pyarrow
-duckdb
-
-# NLP / Search
-spacy
-sentence-transformers
-scikit-learn
-
-# Collectors
-pyalex
 httpx
 beautifulsoup4
-
-# Infra
-apscheduler
 python-dotenv
 loguru
+scikit-learn
+numpy
 tqdm
-pytest
+groq

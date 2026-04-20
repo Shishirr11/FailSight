@@ -74,3 +74,34 @@ def health():
         "status": "ok",
         "opportunities_in_db": row_count,
     }
+
+
+
+'''
+The Requirement.txt for local hosting
+fastapi
+uvicorn
+requests
+
+# Data
+pandas
+pyarrow
+duckdb
+
+# NLP / Search
+spacy
+sentence-transformers
+scikit-learn
+
+# Collectors
+pyalex
+httpx
+beautifulsoup4
+
+# Infra
+apscheduler
+python-dotenv
+loguru
+tqdm
+pytest
+'''
