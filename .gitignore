@@ -7,16 +7,16 @@ __pycache__/
 *.egg-info/
 .env
 
-backend/data.duckdb
+# backend/data.duckdb
 backend/data.duckdb.wal
 
 *.npy
 *.pkl
 
-backend/data/raw/
+# backend/data/raw/
 backend/data/processed/
 backend/data/embeddings/
-backend/data/search_index/
+# backend/data/search_index/
 backend/exports/*.csv
 
 !backend/data/raw/failures/curated_failures.csv
@@ -26,4 +26,5 @@ frontend/node_modules/
 frontend/dist/
 
 .DS_Store
-Thumbs.db
+Thumbs.dbbackend/data.duckdb
+backend/data.duckdb.bak
