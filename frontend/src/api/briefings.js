@@ -1,4 +1,4 @@
-const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/breifings`;
+const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/briefings`;
 export async function fetchSectorBriefing(sector) {
   const res = await fetch(`${BASE}/sector`, {
     method: "POST",
