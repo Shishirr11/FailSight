@@ -1,13 +1,17 @@
 #!/bin/bash
 set -e
+
+export PYTHONPATH=/app
+
 echo "Running ingest..."
-cd /app
-python scripts/ingest.py --source failures --disk
-python scripts/ingest.py --source grants --disk
-python scripts/ingest.py --source nsf --disk
-python scripts/ingest.py --source research --disk
-python scripts/ingest.py --source sbir --disk
+python /app/scripts/ingest.py --source failures --disk
+python /app/scripts/ingest.py --source grants --disk
+python /app/scripts/ingest.py --source nsf --disk
+python /app/scripts/ingest.py --source research --disk
+python /app/scripts/ingest.py --source sbir --disk
+
 echo "Building TF-IDF..."
-python scripts/build_tfidf.py
+python /app/scripts/build_tfidf.py
+
 echo "Starting server..."
 uvicorn main:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 120
