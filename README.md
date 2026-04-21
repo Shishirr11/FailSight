@@ -1,4 +1,5 @@
 # Failsight — Founder's Intelligence Platform
+Live here : https://fail-sight.vercel.app
 
 One place to see what funding exists, what companies have failed before you, and whether your idea has a real chance. No paywalls, no signups — all data pulled from public sources and stored locally.
 
