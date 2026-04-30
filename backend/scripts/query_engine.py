@@ -16,7 +16,12 @@ sys.path.insert(0, str(_BACKEND))
 from storage.db import get_db
 from loguru import logger
 
-INDEX_DIR       = _BACKEND / "data" / "search_index"
+import os as _os
+_TMP_INDEX  = Path(_os.environ.get("ASSET_CACHE_DIR", "/tmp/failsight")) / "index"
+_LOCAL_INDEX = _BACKEND / "data" / "search_index"
+
+INDEX_DIR = _TMP_INDEX if (_TMP_INDEX / "tfidf_matrix.npz").exists() else _LOCAL_INDEX
+
 TFIDF_VEC_PATH  = INDEX_DIR / "tfidf_vectorizer.pkl"
 TFIDF_MAT_PATH  = INDEX_DIR / "tfidf_matrix.npz"
 TFIDF_IDS_PATH  = INDEX_DIR / "tfidf_record_ids.json"
