@@ -1,0 +1,49 @@
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+venv/
+
+# DuckDB
+backend/data.duckdb
+backend/data.duckdb.wal
+backend/data.duckdb.bak
+
+# Raw fetched data (re-fetched by pipeline on deploy)
+backend/data/raw/grants/*.json
+backend/data/raw/nsf/*.json
+backend/data/raw/research/*.json
+backend/data/raw/sbir/*.json
+backend/data/raw/failures/*.json
+
+# Keep cbinsights CSVs (source data, not fetchable)
+!backend/data/raw/failures/cbinsights/
+!backend/data/raw/failures/cbinsights/*.csv
+
+# Processed parquet (re-generated)
+backend/data/processed/
+
+# Search index (re-generated on deploy)
+backend/data/search_index/*.npz
+backend/data/search_index/*.pkl
+backend/data/search_index/*.json
+
+# Temp R2 cache
+/tmp/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# macOS
+.DS_Store
+.vscode/
+
+# Git LFS originals
+*.npy

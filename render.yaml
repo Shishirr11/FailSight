@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: failsight-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    healthCheckPath: /api/health
+    envVars:
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SAM_API_KEY
+        sync: false
+      - key: NCBI_API_KEY
+        sync: false
+      - key: OPENALEX_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+      - key: OPENALEX_EMAIL
+        value: vallapunenishishir@gmail.com
+      - key: ASSET_CACHE_DIR
+        value: /tmp/failsight
+      - key: PYTHON_VERSION
+        value: 3.11.0
