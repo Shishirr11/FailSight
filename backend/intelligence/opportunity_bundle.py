@@ -33,11 +33,6 @@ def _clean(record: dict) -> dict:
 
 
 def _sector_keywords(sector: str) -> list[str]:
-    """
-    Extract meaningful keywords from a sector label for fallback queries.
-    e.g. 'AI & Machine Learning' -> ['AI', 'Machine Learning', 'artificial intelligence']
-    """
-    # Predefined keyword expansions for known sectors
     EXPANSIONS = {
         "AI & Machine Learning":  ["artificial intelligence", "machine learning", "deep learning", "neural", "AI"],
         "Cybersecurity":          ["cybersecurity", "cyber security", "security", "threat", "encryption"],
@@ -60,7 +55,6 @@ def _sector_keywords(sector: str) -> list[str]:
     }
     if sector in EXPANSIONS:
         return EXPANSIONS[sector]
-    # Generic fallback: use words from the sector name (3+ chars)
     words = [w for w in sector.replace("&", "").replace("-", " ").split() if len(w) >= 3]
     return words[:4]
 
@@ -68,10 +62,6 @@ def _sector_keywords(sector: str) -> list[str]:
 def _query_with_fallback(con, sql_exact: str, sql_fallback: str,
                          params_exact: list, params_fallback: list,
                          min_rows: int = 2) -> pd.DataFrame:
-    """
-    Try exact sector ILIKE query first; if fewer than min_rows results,
-    fall back to keyword-based title/description search.
-    """
     df = _safe_fillna(con.execute(sql_exact, params_exact).fetchdf())
     if len(df) >= min_rows:
         return df
@@ -80,7 +70,6 @@ def _query_with_fallback(con, sql_exact: str, sql_fallback: str,
 
 
 def _kw_cond(keywords: list[str], field: str = "title") -> tuple[str, list]:
-    """Build an OR-based ILIKE condition for a list of keywords."""
     if not keywords:
         return "1=0", []
     parts = " OR ".join(f"{field} ILIKE ?" for _ in keywords)
@@ -92,19 +81,16 @@ def build_opportunity_bundle(sector: str, con) -> dict:
     kws = _sector_keywords(sector)
     sector_p = f"%{sector}%"
 
-    # ── Title/desc keyword condition ──────────────────────────────────────
     kw_title_cond, kw_title_p = _kw_cond(kws, "title")
     kw_desc_cond,  kw_desc_p  = _kw_cond(kws, "description")
     kw_any_cond = f"({kw_title_cond} OR {kw_desc_cond})"
     kw_any_p    = kw_title_p + kw_desc_p
 
-    # ── Intelligence modules (these already have their own fallbacks) ─────
     validation  = validate_market(sector, con)
     risk        = score_sector_risk(sector, con)
     competitors = get_competitor_radar(sector, con)
     white_space = get_sector_white_space(sector, con)
 
-    # ── Contracts ─────────────────────────────────────────────────────────
     contracts = _query_with_fallback(
         con,
         sql_exact="""
@@ -134,7 +120,6 @@ def build_opportunity_bundle(sector: str, con) -> dict:
         params_fallback=kw_any_p,
     ).to_dict(orient="records")
 
-    # ── Grants ─────────────────────────────────────────────────────────────
     grants = _query_with_fallback(
         con,
         sql_exact="""
@@ -164,7 +149,6 @@ def build_opportunity_bundle(sector: str, con) -> dict:
         params_fallback=kw_any_p,
     ).to_dict(orient="records")
 
-    # ── Patents ────────────────────────────────────────────────────────────
     patents = _query_with_fallback(
         con,
         sql_exact="""
@@ -190,7 +174,6 @@ def build_opportunity_bundle(sector: str, con) -> dict:
         params_fallback=kw_title_p,
     ).to_dict(orient="records")
 
-    # ── Research ───────────────────────────────────────────────────────────
     research = _query_with_fallback(
         con,
         sql_exact="""

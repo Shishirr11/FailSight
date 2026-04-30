@@ -44,7 +44,6 @@
 
 @layer components {
 
-    /* ── Cards ──────────────────────────────────────────────────── */
     .card {
         @apply bg-white border border-grey-200 rounded-xl;
     }
@@ -57,12 +56,10 @@
         @apply bg-navy-50 border-navy-300 shadow-sm;
     }
 
-    /* ── Inputs ─────────────────────────────────────────────────── */
     .input {
         @apply w-full bg-white border border-grey-200 rounded-lg px-3 py-2.5 text-base text-grey-900 placeholder-grey-400 focus:outline-none focus:border-navy-400 focus:ring-2 focus:ring-navy-100 transition-colors;
     }
 
-    /* ── Buttons ─────────────────────────────────────────────────── */
     .btn-primary {
         @apply bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-navy;
     }
@@ -79,12 +76,10 @@
         @apply bg-transparent hover:bg-navy-50 text-navy-800 text-sm font-semibold px-3 py-2 rounded-lg border border-navy-200 hover:border-navy-400 transition-colors;
     }
 
-    /* Keep for backward compat — now maps to navy */
     .btn-outline-green {
         @apply btn-outline-navy;
     }
 
-    /* ── Source badges (semantic — DO NOT change these colors) ──── */
     .badge-grants {
         @apply text-2xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200;
     }
@@ -109,12 +104,10 @@
         @apply text-2xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200;
     }
 
-    /* ── Labels ──────────────────────────────────────────────────── */
     .section-label {
         @apply text-xs font-bold uppercase tracking-widest text-grey-400;
     }
 
-    /* ── Misc layout ─────────────────────────────────────────────── */
     .divider {
         @apply border-t border-grey-200;
     }
@@ -127,7 +120,6 @@
         @apply px-4 py-3.5 border-b border-grey-100 flex items-center gap-2 shrink-0;
     }
 
-    /* ── Chips ───────────────────────────────────────────────────── */
     .chip {
         @apply text-xs px-2.5 py-1 rounded-full border font-semibold;
     }
@@ -140,7 +132,6 @@
         @apply bg-green-50 text-green-700 border-green-200;
     }
 
-    /* grants only */
     .chip-red {
         @apply bg-red-50 text-red-700 border-red-200;
     }

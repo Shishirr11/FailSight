@@ -3,7 +3,6 @@
 # Most recent record per source
 # Total failures loaded
 
-
 import sys
 from pathlib import Path
 

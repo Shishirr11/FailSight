@@ -192,7 +192,6 @@ def validate_idea(req: ValidateIdeaRequest):
 
     grants = _clean(grants_df.fillna("").to_dict(orient="records"))
 
-    # Include failure_id so the frontend can navigate to the graveyard
     failures_df = con.execute("""
         SELECT failure_id, company_name, year_failed, funding_raised_usd, failure_reasons, key_lesson
         FROM failures_unified

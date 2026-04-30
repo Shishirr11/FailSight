@@ -114,7 +114,6 @@ export default function Landing() {
             </button>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-3xl mx-auto">
             {STATS.map(s => (
               <div key={s.label} className="bg-white/5 border border-white/10 rounded-2xl px-4 py-5">

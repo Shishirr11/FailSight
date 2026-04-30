@@ -10,20 +10,14 @@ const fmt = n =>
   : n >= 1e3 ? `$${(n/1e3).toFixed(0)}K`
   : `$${Math.round(n)}`
 
-// Strip AI-generated markdown artifacts from stored text
 function cleanText(text) {
   if (!text || typeof text !== 'string') return ''
   return text
-    // Remove **bold** and *italic* markers
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
-    // Remove lines that are just a dash-bullet list item — convert to prose flow
     .replace(/^[\-•]\s+/gm, '')
-    // Remove ### headings — just leave the text
     .replace(/^#{1,3}\s+/gm, '')
-    // Collapse 3+ newlines to a paragraph break
     .replace(/\n{3,}/g, '\n\n')
-    // Remove trailing/leading whitespace per line
     .split('\n').map(l => l.trim()).join('\n')
     .trim()
 }
@@ -157,7 +151,6 @@ function FilterPanel({ filters, onApply, onClose }) {
   )
 }
 
-// ── Prose block — clean and display a stored text field ─────────────────────
 function ProseBlock({ text }) {
   const cleaned = cleanText(text)
   if (!cleaned) return null
@@ -196,7 +189,6 @@ function FailureDetail({ failureId, onNameLoad }) {
 
   return (
     <div className="space-y-5">
-      {/* Hero */}
       <div className="bg-white border border-grey-200 rounded-2xl p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
@@ -224,7 +216,6 @@ function FailureDetail({ failureId, onNameLoad }) {
         )}
       </div>
 
-      {/* What happened */}
       {(why_failed || description) && (
         <div className="bg-white border border-grey-200 rounded-2xl p-6 shadow-sm space-y-3">
           <p className="section-label">What happened</p>
@@ -232,7 +223,6 @@ function FailureDetail({ failureId, onNameLoad }) {
         </div>
       )}
 
-      {/* Key lesson */}
       {data.key_lesson && (
         <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
@@ -243,7 +233,6 @@ function FailureDetail({ failureId, onNameLoad }) {
         </div>
       )}
 
-      {/* Market analysis */}
       {market_analysis && (
         <div className="bg-white border border-grey-200 rounded-2xl p-6 shadow-sm space-y-3">
           <p className="section-label">Market context</p>
@@ -251,7 +240,6 @@ function FailureDetail({ failureId, onNameLoad }) {
         </div>
       )}
 
-      {/* Scores */}
       {(difficulty || scalability || market_potential) && (
         <div className="bg-white border border-grey-200 rounded-2xl p-6 shadow-sm">
           <p className="section-label mb-3">Lootdrop scores</p>
@@ -266,7 +254,6 @@ function FailureDetail({ failureId, onNameLoad }) {
         </div>
       )}
 
-      {/* Founders */}
       {data.founder_names && (
         <div className="bg-white border border-grey-200 rounded-2xl p-6 shadow-sm">
           <p className="section-label mb-2">Founders</p>
@@ -285,7 +272,6 @@ function FailureDetail({ failureId, onNameLoad }) {
   )
 }
 
-// ── Main Page ───────────────────────────────────────────────────────────────
 export default function IdeaGraveyard() {
   const location = useLocation()
 

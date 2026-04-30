@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 def _get_engine():
-    _scripts = Path(__file__).resolve().parent.parent.parent / "scripts"
+    _scripts = Path(__file__).resolve().parent.parent / "scripts"
     if str(_scripts) not in sys.path:
         sys.path.insert(0, str(_scripts))
     try:

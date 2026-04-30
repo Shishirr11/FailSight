@@ -175,7 +175,6 @@ SECTOR_MAP: dict[str, str] = {
 }
 
 def infer_sector(text: str, keyword: str = "") -> str:
-    """Best-effort sector label from title / description / keyword / naics."""
     combined = (text + " " + keyword).lower()
     for kw, sector in SECTOR_MAP.items():
         if kw in combined:
@@ -199,11 +198,6 @@ def _safe_float(val) -> Optional[float]:
         return None
 
 def _extractive_summary(text: str, n_sentences: int = 4) -> str:
-    """
-    Pure-Python word-frequency extractive summary. No external calls.
-    Scores each sentence by its content-word frequency, returns top-n
-    sentences in original reading order.
-    """
     if not text or len(text) < 120:
         return text or ""
 
@@ -863,7 +857,6 @@ def write_records(records: list[dict], source: str, con=None) -> int:
     return new_rows
 
 def _is_writable_table(con, table_name: str) -> bool:
-    """Returns True only if the object is a real base table (not a view)."""
     result = con.execute("""
         SELECT table_type FROM information_schema.tables
         WHERE table_name = ?

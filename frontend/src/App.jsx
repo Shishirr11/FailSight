@@ -6,7 +6,6 @@ import Home          from './pages/Home'
 import Intelligence  from './pages/Intelligence'
 import IdeaGraveyard from './pages/Ideagraveyard'
 
-// Wraps the 3 main pages with the sidebar layout
 function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   return (

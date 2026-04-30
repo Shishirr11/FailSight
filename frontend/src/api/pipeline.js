@@ -1,6 +1,3 @@
-// BASE now points to /api/storage — the R2-aware router that
-// exports parquet and uploads to R2 after every pipeline run.
-// The old /api/pipeline router does NOT upload to R2 and can be removed.
 const BASE = `${import.meta.env.VITE_API_BASE || ""}/api/storage`;
 
 export async function triggerPipelineRun(source = null, rebuildIndex = true) {

@@ -113,7 +113,6 @@ def _load_usage(force: bool = False) -> dict:
         except Exception as e:
             err_str = str(e)
             if "NoSuchKey" in err_str or "does not exist" in err_str:
-                # First run — usage file doesn't exist yet, create it
                 logger.info("No usage file in R2 yet — creating fresh one.")
                 data = _blank_usage()
                 try:

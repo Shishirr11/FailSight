@@ -1,6 +1,3 @@
-"""
-Pipeline router — triggers ingest, rebuilds indexes, exports parquet, uploads to R2
-"""
 import os
 import sys
 from datetime import datetime
@@ -15,7 +12,7 @@ from storage.db import get_db, export_parquet, reload_db_from_parquet, TMP_PARQU
 
 router = APIRouter()
 
-_SCRIPTS = Path(__file__).resolve().parent.parent.parent / "scripts"
+_SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
 
 _R2_ENABLED = bool(
     os.environ.get("R2_ACCOUNT_ID") and

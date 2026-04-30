@@ -554,7 +554,6 @@ def _scrape_failory_detail(url: str) -> dict:
     data_card = soup.find("div", class_="cemetery-page-data-card")
     if data_card:
         def get_data_field(label: str) -> str:
-            """Find a row by its category label and return the information value."""
             for cat in data_card.find_all("div", class_="cemetery-page-data-category"):
                 if label.lower() in cat.get_text(strip=True).lower():
                     info = cat.find_next_sibling("div", class_="cemetery-page-data-information")

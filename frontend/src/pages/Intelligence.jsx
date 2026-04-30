@@ -78,7 +78,6 @@ function ValidateIdeaResult({ data, onGrantClick, onFailureClick }) {
         </div>
       )}
 
-      {/* Matching grants — clickable → opens in Findout */}
       {data.matching_grants?.length > 0 && (
         <div>
           <p className="section-label mb-3">Matching grants ({data.matching_grants.length})</p>
@@ -107,7 +106,6 @@ function ValidateIdeaResult({ data, onGrantClick, onFailureClick }) {
         </div>
       )}
 
-      {/* Known failures — clickable → opens in Graveyard */}
       {data.known_failures?.length > 0 && (
         <div>
           <p className="section-label mb-3">Known failures in this space</p>
@@ -225,7 +223,6 @@ function GrantMatchResult({ data, onGrantClick }) {
           <p className="section-label mb-2.5">All matches ranked</p>
           <div className="space-y-2.5">
             {data.ranked_grants.map((g, i) => {
-              // find matching opp_id from data.grants
               const full = data.grants?.find(gr => gr.title === g.title)
               return (
                 <button key={i}
@@ -289,12 +286,10 @@ export default function Intelligence() {
     setTimeout(() => inputRef.current?.focus(), 50)
   }
 
-  // Navigate to /home with the opp pre-selected
   const handleGrantClick = (oppId) => {
     navigate('/home', { state: { openOppId: oppId } })
   }
 
-  // Navigate to /graveyard with the failure pre-selected
   const handleFailureClick = (failureId) => {
     navigate('/graveyard', { state: { openFailureId: failureId } })
   }

@@ -254,7 +254,6 @@ function LegendDropdown({ stats, onRefresh, refreshing }) {
   )
 }
 
-// ── Card (left panel list item) ─────────────────────────────────────────────
 function OppCard({ opp, selected, onSelect, onExpand }) {
   const isExpiring = opp.close_date &&
     new Date(opp.close_date) < new Date(Date.now() + 14 * 86400000) &&
@@ -294,7 +293,6 @@ function OppCard({ opp, selected, onSelect, onExpand }) {
   )
 }
 
-// ── Detail view (rendered in the LEFT panel) ────────────────────────────────
 function OppDetail({ opp, onBack, searchQuery }) {
   const [whyCareText, setWhyCareText] = useState(null)
   const [loadingWhy, setLoadingWhy]   = useState(false)
@@ -463,7 +461,6 @@ function OppDetail({ opp, onBack, searchQuery }) {
   )
 }
 
-// ── Sector Intelligence (always in RIGHT panel) ─────────────────────────────
 function SectorIntelligence({ sector, onGrantClick, onFailureClick }) {
   const [briefing, setBriefing] = useState(null)
   const [loading, setLoading]   = useState(false)
@@ -641,7 +638,6 @@ function SectorIntelligence({ sector, onGrantClick, onFailureClick }) {
   )
 }
 
-// ── Main Home ───────────────────────────────────────────────────────────────
 export default function Home() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -654,9 +650,7 @@ export default function Home() {
   const [total, setTotal]             = useState(0)
   const [loading, setLoading]         = useState(false)
   const [offset, setOffset]           = useState(0)
-  // selectedOpp = which card is highlighted AND drives sector intel in right panel
   const [selectedOpp, setSelectedOpp] = useState(null)
-  // showDetail = show OppDetail in the LEFT panel (sector intel stays in right)
   const [showDetail, setShowDetail]   = useState(false)
   const [lastQuery, setLastQuery]     = useState('')
   const [stats, setStats]             = useState(null)
@@ -715,13 +709,9 @@ export default function Home() {
   const handleSourceChange = s => { setActiveSource(s); setOffset(0); setSelectedOpp(null); setShowDetail(false); doSearch(query, s, filters, 0) }
   const handleFilters = flt => { setFilters(flt); setOffset(0); setSelectedOpp(null); setShowDetail(false); doSearch(query, activeSource, flt, 0) }
 
-  // Click card body → highlight card, update sector intel, stay in list
   const handleSelectOpp = opp => { setSelectedOpp(opp); setShowDetail(false) }
-  // Click View button → show detail IN left panel
   const handleExpandOpp = opp => { setSelectedOpp(opp); setShowDetail(true) }
-  // Click grant in sector intel → show detail in left panel
   const handleGrantClick = grant => { setSelectedOpp(grant); setShowDetail(true) }
-  // Click failure in sector intel → navigate to graveyard
   const handleFailureClick = failureId => navigate('/graveyard', { state: { openFailureId: failureId } })
 
   const handleRefresh = async () => {
@@ -736,7 +726,6 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-grey-100">
 
-      {/* Header */}
       <div className="bg-white border-b border-grey-200 px-5 py-3.5 shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1 relative">
@@ -771,10 +760,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Split panels */}
       <div ref={containerRef} className="flex flex-1 overflow-hidden select-none">
 
-        {/* LEFT: card list OR detail view */}
         <div className="flex flex-col overflow-hidden" style={{ width: `${leftWidth}%` }}>
           {showDetail && selectedOpp ? (
             <OppDetail opp={selectedOpp} onBack={() => setShowDetail(false)} searchQuery={lastQuery} />
@@ -810,10 +797,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* Drag handle */}
         <div onMouseDown={handleMouseDown} className="w-1 bg-grey-200 hover:bg-navy-400 cursor-col-resize shrink-0 transition-colors" />
 
-        {/* RIGHT: sector intelligence — always visible, always related to selected record */}
         <div className="flex-1 overflow-hidden bg-white border-l border-grey-200">
           <SectorIntelligence
             sector={selectedOpp?.sector || null}

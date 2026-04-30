@@ -40,9 +40,8 @@ async def lifespan(app: FastAPI):
     try:
         import sys
         for candidate in [
-            Path(__file__).resolve().parent.parent / "scripts",
             Path(__file__).resolve().parent / "scripts",
-            Path("/app/scripts"),
+            Path(__file__).resolve().parent.parent / "scripts",
         ]:
             if candidate.exists() and str(candidate) not in sys.path:
                 sys.path.insert(0, str(candidate))
@@ -136,23 +135,15 @@ The Requirement.txt for local hosting
 fastapi
 uvicorn
 requests
-
-# Data
 pandas
 pyarrow
 duckdb
-
-# NLP / Search
 spacy
 sentence-transformers
 scikit-learn
-
-# Collectors
 pyalex
 httpx
 beautifulsoup4
-
-# Infra
 apscheduler
 python-dotenv
 loguru

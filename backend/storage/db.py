@@ -1,14 +1,3 @@
-"""
-Database layer
-==============
-On startup:
-  1. Downloads parquet files from Cloudflare R2 into /tmp/failsight/
-  2. Loads them into an in-memory DuckDB instance
-  3. Downloads TF-IDF + embedding index files from R2
-
-Falls back to local data.duckdb in dev if R2 is not configured.
-"""
-
 import os
 from pathlib import Path
 from loguru import logger
@@ -64,7 +53,6 @@ def _load_from_parquet(parquet_dir: Path) -> duckdb.DuckDBPyConnection:
     from storage.schema import create_schema
     create_schema(con)
 
-    # All three tables loaded the same way — no special view treatment
     tables = {
         "unified_opportunities": parquet_dir / "unified_opportunities.parquet",
         "failures_unified":      parquet_dir / "failures_unified.parquet",
